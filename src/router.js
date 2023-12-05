@@ -1,9 +1,9 @@
 const { monan } = require("./Food");
 
-const minCalo = 100;
-const maxCalo = 300;
+const minCalo = 220;
+const maxCalo = 350;
 const mutationRate = 0.02;
-const populationSize = 50;
+const populationSize = 1000;
 
 class Individual {
   constructor(genes) {
@@ -136,7 +136,12 @@ function geneticAlgorithm(populationSize, proteinData, fiberData, tien) {
     const bestSolution = population[0];
     const weekData = [];
     bestSolution.genes.forEach((item, day) => {
-      weekData.push(item);
+      const proteinInfo = proteinData.find((i) => i.meal === item[0]);
+      const fiberInfo = fiberData.find((i) => i.meal === item[1]);
+
+      const totalCalories = proteinInfo.calories + fiberInfo.calories;
+      const totalPrice = proteinInfo.price + fiberInfo.price;
+      weekData.push([...item, totalCalories + 150, totalPrice + 5000]);
     });
     Object.assign(resultItem, {
       gen: gen + 1,
@@ -162,7 +167,7 @@ function getRandomSample(array, size) {
 }
 
 module.exports.Generic = async (req, res) => {
-  const tien = req.body.ga;
+  const tien = req.body.ga - 5000;
   const protein = await monan.findAll({
     where: {
       loai: 1,
