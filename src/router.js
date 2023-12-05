@@ -68,12 +68,14 @@ function initializePopulation(populationSize, proteinData, fiberData) {
 
 function tournamentSelection(population, tournamentSize) {
   const selected = [];
+  const populationCopy = population.map((item) => item);
   while (selected.length < population.length) {
-    const competitors = getRandomSample(population, tournamentSize);
+    const competitors = getRandomSample(populationCopy, tournamentSize);
     const winner = competitors.reduce((maxFitness, current) =>
       current.fitness > maxFitness.fitness ? current : maxFitness
     );
-    selected.push(winner);
+    populationCopy.filter((item) => !item.fitness === winner.fitness);
+    selected.push(winner, winner);
   }
   return selected;
 }
@@ -122,8 +124,8 @@ function generate(population) {
   return nextGeneration;
 }
 
-function geneticAlgorithm(populationSize, proteinData, fiberData, tien) {
-  let population = initializePopulation(populationSize, proteinData, fiberData);
+function geneticAlgorithm(population, proteinData, fiberData, tien) {
+  // let population = initializePopulation(populationSize, proteinData, fiberData);
   //   console.log(population, " ");
   let gen = 0;
   const result = [];
@@ -168,31 +170,30 @@ function getRandomSample(array, size) {
 
 module.exports.Generic = async (req, res) => {
   const tien = req.body.ga - 5000;
-  const protein = await monan.findAll({
-    where: {
-      loai: 1,
-    },
-  });
-  const fiber = await monan.findAll({
-    where: {
-      loai: 0,
-    },
-  });
-  const proteinData = protein.map((item) => ({
-    meal: item.tenMonAn,
-    calories: item.kalo,
-    price: item.gia,
-  }));
-  const fiberData = fiber.map((item) => ({
-    meal: item.tenMonAn,
-    calories: item.kalo,
-    price: item.gia,
-  }));
-  const resData = geneticAlgorithm(
-    populationSize,
-    proteinData,
-    fiberData,
-    tien
-  );
+  const population = req.app.locals.population;
+  const proteinData = req.app.locals.proteinData;
+  const fiberData = req.app.locals.fiberData;
+  // console.log(req.app.locals.thang);
+  // const protein = await monan.findAll({
+  //   where: {
+  //     loai: 1,
+  //   },
+  // });
+  // const fiber = await monan.findAll({
+  //   where: {
+  //     loai: 0,
+  //   },
+  // });
+  // const proteinData = protein.map((item) => ({
+  //   meal: item.tenMonAn,
+  //   calories: item.kalo,
+  //   price: item.gia,
+  // }));
+  // const fiberData = fiber.map((item) => ({
+  //   meal: item.tenMonAn,
+  //   calories: item.kalo,
+  //   price: item.gia,
+  // }));
+  const resData = geneticAlgorithm(population, proteinData, fiberData, tien);
   res.status(200).json({ data: resData });
 };
